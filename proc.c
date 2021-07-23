@@ -7,6 +7,9 @@
 #include "proc.h"
 #include "spinlock.h"
 
+
+
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -311,6 +314,23 @@ wait(void)
   }
 }
 
+// int count_num_of_digits() {
+//   // struct proc *curproc = myproc();
+//   // curproc = curproc;
+//   //curproc->tf->esp = 2002;
+//   int num;  
+//   // if(argint(0, &num) < 0)
+//   //   return -1;
+
+//   int count = 0;
+//   while(num > 0) {
+//     count += 1;
+//     num /= 10;
+//     // write(1, "goh\n", strlen("goh\n"));
+//   }
+//   return count;
+// }
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -532,3 +552,43 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int prepareChildrenPids(int procs[],int numOfProcs) {
+  int multiplier = 1, index = 1, result = 0;
+
+  while (index < numOfProcs) {
+    result += procs[index] * multiplier;
+    multiplier *= 10;
+    index++;
+  }
+
+  return result;
+}
+
+int getChildren(int parentId) {
+  struct proc* iteratorProc = initproc;
+
+  int procs[40];
+  procs[0] = parentId;
+ 
+  int numOfProcs = 1, currentProcIndex = 0, currentProcId;
+  acquire(&ptable.lock);
+
+  while (currentProcIndex < numOfProcs) {
+
+    currentProcId = procs[currentProcIndex];
+
+    for (iteratorProc = ptable.proc; iteratorProc < &ptable.proc[NPROC]; iteratorProc++) {
+      if (iteratorProc->parent->pid == currentProcId) {
+
+        procs[numOfProcs] = iteratorProc->pid;
+        numOfProcs++;
+      }   
+    }
+    currentProcIndex++;
+  }
+  release(&ptable.lock);
+  return prepareChildrenPids(procs, numOfProcs);
+
+}
+

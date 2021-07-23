@@ -23,6 +23,12 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int count_num_of_digits(void);
+int set_sleep(int);
+int get_time(void);
+int set_path(char*);
+int get_parent_id(void);
+int get_children(int);
 
 // ulib.c
 int stat(const char*, struct stat*);
