@@ -96,7 +96,7 @@ int sys_get_time(void) {
   if(argptr(0, (void*)&t, sizeof(&t)) < 0)
     return -1;
   cmostime(t);
-  return (t->second) + (t->minute * 60) * (t->hour * 3600);
+  return (t->second) + (t->minute * 60) + (t->hour * 3600);
 }
 
 int sys_set_path(void) {
@@ -154,14 +154,44 @@ int sys_count_num_of_digits(void) {
   return count;
 }
 
-int sys_get_parent_id() {
+int sys_get_parent_id(void) {
   return myproc()->parent->pid;
 }
 
-int sys_get_children() {
+int sys_get_children(void) {
   int pid;
   if (argint(0, &pid) < 0) 
     return -1;
   return getChildren(pid);
+}
 
+int sys_change_process_queue(void) {
+  int pid, queue;
+  if (argint(0, &pid) < 0) 
+    return -1;
+  if (argint(1, &queue) < 0) 
+    return -1;
+  return change_process_queue(pid, queue);
+}
+
+int sys_set_lottery_ticket(void) {
+  int pid, numOfTickets;
+  if (argint(0, &pid) < 0) 
+    return -1;
+  if (argint(1, &numOfTickets) < 0) 
+    return -1;
+  return set_lottery_ticket(pid, numOfTickets);
+}
+
+int sys_set_srpf_priority(void) {
+  int pid, priority;
+  if (argint(0, &pid) < 0) 
+    return -1;
+  if (argint(1, &priority) < 0) 
+    return -1;
+  return set_srpf_priority(pid, priority);
+}
+
+int sys_print_processes_info(void) {
+  return print_processes_info();
 }

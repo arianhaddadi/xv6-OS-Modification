@@ -120,6 +120,10 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+int             change_process_queue(int, int);
+int             set_lottery_ticket(int, int);
+int             set_srpf_priority(int, int);
+int             print_processes_info(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

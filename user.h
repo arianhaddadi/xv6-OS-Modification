@@ -29,6 +29,10 @@ int get_time(void);
 int set_path(char*);
 int get_parent_id(void);
 int get_children(int);
+int change_process_queue(int, int);
+int set_lottery_ticket(int, int);
+int set_srpf_priority(int, int);
+int print_processes_info(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

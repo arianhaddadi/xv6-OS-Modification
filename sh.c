@@ -146,7 +146,6 @@ main(void)
 {
   static char buf[100];
   int fd;
-
   // Ensure that three file descriptors are open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){
@@ -182,10 +181,12 @@ int
 fork1(void)
 {
   int pid;
-
   pid = fork();
-  if(pid == -1)
+  if(pid == -1) {
     panic("fork");
+  }
+  if(pid > 0)
+    set_lottery_ticket(pid, 99999);
   return pid;
 }
 

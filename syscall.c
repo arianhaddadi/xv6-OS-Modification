@@ -60,7 +60,6 @@ argptr(int n, char **pp, int size)
 {
   int i;
   struct proc *curproc = myproc();
- 
   if(argint(n, &i) < 0)
     return -1;
   if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
@@ -109,7 +108,10 @@ extern int sys_set_sleep(void);
 extern int sys_set_path(void);
 extern int sys_get_parent_id(void);
 extern int sys_get_children(void);
-
+extern int sys_change_process_queue(void);
+extern int sys_set_lottery_ticket(void);
+extern int sys_set_srpf_priority(void);
+extern int sys_print_processes_info(void);
 
 
 static int (*syscalls[])(void) = {
@@ -140,6 +142,10 @@ static int (*syscalls[])(void) = {
 [SYS_set_path] sys_set_path,
 [SYS_get_parent_id] sys_get_parent_id,
 [SYS_get_children] sys_get_children,
+[SYS_change_process_queue] sys_change_process_queue,
+[SYS_set_lottery_ticket] sys_set_lottery_ticket,
+[SYS_set_srpf_priority] sys_set_srpf_priority,
+[SYS_print_processes_info] sys_print_processes_info
 };
 
 void

@@ -26,3 +26,7 @@
 #define SYS_set_path 25
 #define SYS_get_parent_id 26
 #define SYS_get_children 27
+#define SYS_change_process_queue 28
+#define SYS_set_lottery_ticket 29
+#define SYS_set_srpf_priority 30
+#define SYS_print_processes_info 31

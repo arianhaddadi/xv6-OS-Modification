@@ -50,6 +50,13 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  ////////////Code Added for Phase 3////////////
+  int queueNum;                // Number of the queue this process is inside it (1, 2, 3)
+  int ticketsCount;		         // Process tickets
+  double srpfPriority;
+  int arrivalTime;
+  int cyclesExecuted;
 };
 
 // Process memory is laid out contiguously, low addresses first:
