@@ -33,6 +33,9 @@ int change_process_queue(int, int);
 int set_lottery_ticket(int, int);
 int set_srpf_priority(int, int);
 int print_processes_info(void);
+int make_barrier(void);
+int check_barrier(void);
+int test_remutex(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

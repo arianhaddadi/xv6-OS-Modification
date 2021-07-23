@@ -21,10 +21,6 @@ char floatStr [10];
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
-
-  // struct proc* LotteryQueue[NPROC];
-  // struct proc* hrrnQueue[NPROC];
-  // struct proc* srpfQueue[NPROC];
 } ptable;
 
 struct queueNode {
@@ -32,15 +28,21 @@ struct queueNode {
   struct queueNode* next;
 };
 
+
+struct {
+  int num;
+  struct spinlock lock;
+  int* channel;
+} barrier;
+
+
 static struct proc *initproc;
 
 int nextpid = 1;
+int barrier_empty = 1;
 
 const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-
-// int numOfLotteryProcs = 0, numOfHRRNProcs = 0, numOfSRPFProcs = 0; 
-// struct proc* LotteryQueue[NPROC] = {'\0'}, *hrrnQueue[NPROC] = {'\0'}, *srpfQueue[NPROC] = {'\0'};
 
 extern void forkret(void);
 extern void trapret(void);
@@ -825,4 +827,39 @@ int print_processes_info(void) {
   }
   release(&ptable.lock);
   return -1;
+}
+
+
+int make_barrier(void) {
+  if(barrier_empty == 0)
+    return -1;
+  barrier.num = 0;
+  barrier_empty = 0;
+  return 0;
+}
+
+int check_barrier(void) {
+  if(barrier.num == BARRIER_CAPACITY - 1) {
+    cprintf("Barrier reached maximum capacity!\n");
+    wakeup(barrier.channel);
+    barrier.num = 0;
+    barrier_empty = 1;
+  }
+  else {
+    barrier.num += 1;
+    acquire(&barrier.lock);
+    sleep(barrier.channel, &(barrier.lock));
+    release(&barrier.lock);
+  }
+  return 0;
+}
+
+int test_remutex(void) {
+  struct reentrant_spinlock test_lock;
+  acquire_reentrant(&test_lock);
+  acquire_reentrant(&test_lock);
+  acquire_reentrant(&test_lock);
+  release_reentrant(&test_lock);
+  cprintf("Remutex was tested successfully!\n");
+  return 1;
 }

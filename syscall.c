@@ -112,6 +112,9 @@ extern int sys_change_process_queue(void);
 extern int sys_set_lottery_ticket(void);
 extern int sys_set_srpf_priority(void);
 extern int sys_print_processes_info(void);
+extern int sys_make_barrier(void);
+extern int sys_check_barrier(void);
+extern int sys_test_remutex(void);
 
 
 static int (*syscalls[])(void) = {
@@ -145,7 +148,10 @@ static int (*syscalls[])(void) = {
 [SYS_change_process_queue] sys_change_process_queue,
 [SYS_set_lottery_ticket] sys_set_lottery_ticket,
 [SYS_set_srpf_priority] sys_set_srpf_priority,
-[SYS_print_processes_info] sys_print_processes_info
+[SYS_print_processes_info] sys_print_processes_info,
+[SYS_make_barrier] sys_make_barrier,
+[SYS_check_barrier] sys_check_barrier,
+[SYS_test_remutex] sys_test_remutex
 };
 
 void

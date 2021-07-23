@@ -192,6 +192,18 @@ int sys_set_srpf_priority(void) {
   return set_srpf_priority(pid, priority);
 }
 
+int sys_make_barrier(void) {
+  return make_barrier();
+}
+
 int sys_print_processes_info(void) {
   return print_processes_info();
+}
+
+int sys_check_barrier(void) {
+  return check_barrier();
+}
+
+int sys_test_remutex(void) {
+  return test_remutex();
 }

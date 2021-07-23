@@ -6,6 +6,7 @@ struct pipe;
 struct proc;
 struct rtcdate;
 struct spinlock;
+struct reentrant_spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
@@ -124,16 +125,22 @@ int             change_process_queue(int, int);
 int             set_lottery_ticket(int, int);
 int             set_srpf_priority(int, int);
 int             print_processes_info(void);
+int             make_barrier(void);
+int             check_barrier(void);
+int             test_remutex(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
 
 // spinlock.c
 void            acquire(struct spinlock*);
+void            acquire_reentrant(struct reentrant_spinlock*);
 void            getcallerpcs(void*, uint*);
 int             holding(struct spinlock*);
+int             holding_reentrant(struct reentrant_spinlock*);
 void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
+void            release_reentrant(struct reentrant_spinlock*);
 void            pushcli(void);
 void            popcli(void);
 

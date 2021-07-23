@@ -30,3 +30,6 @@
 #define SYS_set_lottery_ticket 29
 #define SYS_set_srpf_priority 30
 #define SYS_print_processes_info 31
+#define SYS_make_barrier 32
+#define SYS_check_barrier 33
+#define SYS_test_remutex 34
