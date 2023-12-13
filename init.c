@@ -18,9 +18,9 @@ main(void)
   }
   dup(0);  // stdout
   dup(0);  // stderr
+
   for(;;){
     printf(1, "init: starting sh\n");
-    printf(1, "Group #10:\n1- Aryan Haddadi\n2- Faraz Shahsavan\n3- Amir Pourmohammadali\n");
     pid = fork();
     if(pid < 0){
       printf(1, "init: fork failed\n");
@@ -32,6 +32,6 @@ main(void)
       exit();
     }
     while((wpid=wait()) >= 0 && wpid != pid){}
-      //printf(1, "zombie!\n");
+      printf(1, "zombie!\n");
   }
 }

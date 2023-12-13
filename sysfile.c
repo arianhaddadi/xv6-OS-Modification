@@ -72,6 +72,7 @@ sys_read(void)
   struct file *f;
   int n;
   char *p;
+
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;
   return fileread(f, p, n);
@@ -418,6 +419,12 @@ sys_exec(void)
   return exec(path, argv);
 }
 
+/*
+ * My Understanding: This function receives an array with two members(fd), then receives the array via argptr() call,
+ * then allocates two files (one for read and one for write) and a pipe connecting them (both happen inside pipealloc()), 
+ * then allocate two file descriptors for those two files and
+ * then, the first member of fd will be for reading from the pipe and the second would be for writing on the pipe
+*/ 
 int
 sys_pipe(void)
 {

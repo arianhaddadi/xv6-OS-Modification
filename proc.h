@@ -12,10 +12,9 @@ struct cpu {
 
 extern struct cpu cpus[NCPU];
 extern int ncpu;
-extern int getChildren(int);
 
 //PAGEBREAK: 17
-// Saved registers for kernel context switches
+// Saved registers for kernel context switches.
 // Don't need to save all the segment registers (%cs, etc),
 // because they are constant across kernel contexts.
 // Don't need to save %eax, %ecx, %edx, because the
@@ -33,30 +32,31 @@ struct context {
   uint eip;
 };
 
+struct door {
+  int caller_pid;            // Caller Process ID
+  char incoming_message[30]; // Incoming message of a door call to this process
+  char call_return_val[30];  // Return value of the door call made by this process
+  int door_call_ready;       // Becomes 1 if a door call to this process has been made
+};
+
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
 struct proc {
-  uint sz;                     // Size of process memory (bytes)
-  pde_t* pgdir;                // Page table
-  char *kstack;                // Bottom of kernel stack for this process
-  enum procstate state;        // Process state
-  int pid;                     // Process ID
-  struct proc *parent;         // Parent process
-  struct trapframe *tf;        // Trap frame for current syscall
-  struct context *context;     // swtch() here to run process
-  void *chan;                  // If non-zero, sleeping on chan
-  int killed;                  // If non-zero, have been killed
-  struct file *ofile[NOFILE];  // Open files
-  struct inode *cwd;           // Current directory
-  char name[16];               // Process name (debugging)
-
-  ////////////Code Added for Phase 3////////////
-  int queueNum;                // Number of the queue this process is inside it (1, 2, 3)
-  int ticketsCount;		         // Process tickets
-  double srpfPriority;
-  int arrivalTime;
-  int cyclesExecuted;
+  uint sz;                        // Size of process memory (bytes)
+  pde_t* pgdir;                   // Page table
+  char *kstack;                   // Bottom of kernel stack for this process
+  enum procstate state;           // Process state
+  int pid;                        // Process ID
+  struct proc *parent;            // Parent process
+  struct trapframe *tf;           // Trap frame for current syscall
+  struct context *context;        // swtch() here to run process
+  void *chan;                     // If non-zero, sleeping on chan
+  int killed;                     // If non-zero, have been killed
+  struct file *ofile[NOFILE];     // Open files
+  struct inode *cwd;              // Current directory
+  char name[16];                  // Process name (debugging)
+  struct door pdoor;              // Door structure of the process
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -64,3 +64,6 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+
+

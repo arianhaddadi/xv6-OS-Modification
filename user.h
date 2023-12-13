@@ -23,19 +23,9 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int count_num_of_digits(void);
-int set_sleep(int);
-int get_time(void);
-int set_path(char*);
-int get_parent_id(void);
-int get_children(int);
-int change_process_queue(int, int);
-int set_lottery_ticket(int, int);
-int set_srpf_priority(int, int);
-int print_processes_info(void);
-int make_barrier(void);
-int check_barrier(void);
-int test_remutex(void);
+int door_call(int, char*, char*);
+int door_wait(char*);
+int door_respond(char*);
 
 // ulib.c
 int stat(const char*, struct stat*);

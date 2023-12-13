@@ -6,7 +6,6 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-#include "searchingPaths.h"
 
 int
 sys_fork(void)
@@ -91,119 +90,65 @@ sys_uptime(void)
   return xticks;
 }
 
-int sys_get_time(void) {
-  struct rtcdate *t;
-  if(argptr(0, (void*)&t, sizeof(&t)) < 0)
-    return -1;
-  cmostime(t);
-  return (t->second) + (t->minute * 60) + (t->hour * 3600);
-}
+int
+sys_door_call(void) 
+{ 
+  int dstprocess;
+  char *message; 
+  char *response;
 
-int sys_set_path(void) {
-  cprintf("Inside kernel!\n");
-
-  char* newPaths;
-  if(argstr(0, &newPaths) < 0)
-    return -1;
-  int i = 0, j = 1, k;
-    while (1) {
-        while (j < strlen(newPaths) && newPaths[j] != ':') j++;
-        if (j >= strlen(newPaths)) break;
-        for (k = i ; k < j ; k++) {
-            paths[numOfPaths][k-i] = newPaths[k];
-        }   
-        paths[numOfPaths][k-i] = '\0';
-        numOfPaths ++;
-
-        j++;
-        i = j;
-    }
-    cprintf("PATH variable got updated!\n");
-    return 1;
-}
-
-int sys_set_sleep(void) {
-  int n;
-  if(argint(0, &n) < 0)
-    return -1;
-
-  acquire(&tickslock);
-  int startTime = ticks;
-  while((ticks-startTime) < n * 90) {
-    release(&tickslock);
-    sti();
-    acquire(&tickslock);
+  if (argint(0, &dstprocess) < 0 || argptr(1, &message, sizeof(char*)) < 0, argptr(2, &response, sizeof(char*)) < 0) {
+    return -1;  // Invalid arguments
   }
-  release(&tickslock);
-  return 1;
+
+  struct proc *destination_proc = getproc(dstprocess);
+  struct door *destination_proc_door = &(destination_proc->pdoor);
+  strncpy(destination_proc_door->incoming_message, message, strlen(message));
+
+  destination_proc_door->caller_pid = myproc()->pid;
+  destination_proc_door->door_call_ready = 1;
+  
+  door_yield(destination_proc);  
+
+  strncpy(response, myproc()->pdoor.call_return_val, strlen(message));
+
+  return 0;
 }
 
-int sys_count_num_of_digits(void) {
-  cprintf("Inside kernel!\n");
+int
+sys_door_wait(void) 
+{ 
+  char *message; 
 
-  int num;
-  struct proc *curproc = myproc();
-  num = curproc->tf->ebx;
-
-  int count = 0;
-  while(num > 0) {
-    count += 1;
-    num /= 10;
+  if (argptr(0, &message, sizeof(char*)) < 0) {
+    return -1;  // Invalid arguments
   }
-  cprintf("num of digits: %d\n", count);
-  return count;
+
+  struct door *mydoor = &myproc()->pdoor;
+
+  while(mydoor->door_call_ready == 0) yield();
+
+  char *incoming_message = mydoor->incoming_message;
+  strncpy(message, incoming_message, strlen(incoming_message));
+  mydoor->door_call_ready = 0;
+
+  return 0;
 }
 
-int sys_get_parent_id(void) {
-  return myproc()->parent->pid;
-}
 
-int sys_get_children(void) {
-  int pid;
-  if (argint(0, &pid) < 0) 
-    return -1;
-  return getChildren(pid);
-}
+int
+sys_door_respond(void) 
+{ 
+  char *response; 
 
-int sys_change_process_queue(void) {
-  int pid, queue;
-  if (argint(0, &pid) < 0) 
-    return -1;
-  if (argint(1, &queue) < 0) 
-    return -1;
-  return change_process_queue(pid, queue);
-}
+  if (argptr(0, &response, sizeof(char*)) < 0) {
+    return -1;  // Invalid arguments
+  }
 
-int sys_set_lottery_ticket(void) {
-  int pid, numOfTickets;
-  if (argint(0, &pid) < 0) 
-    return -1;
-  if (argint(1, &numOfTickets) < 0) 
-    return -1;
-  return set_lottery_ticket(pid, numOfTickets);
-}
+  struct proc *caller_proc = getproc(myproc()->pdoor.caller_pid);
+  strncpy(caller_proc->pdoor.call_return_val, response, strlen(response));
 
-int sys_set_srpf_priority(void) {
-  int pid, priority;
-  if (argint(0, &pid) < 0) 
-    return -1;
-  if (argint(1, &priority) < 0) 
-    return -1;
-  return set_srpf_priority(pid, priority);
-}
+  door_yield(caller_proc);
 
-int sys_make_barrier(void) {
-  return make_barrier();
-}
-
-int sys_print_processes_info(void) {
-  return print_processes_info();
-}
-
-int sys_check_barrier(void) {
-  return check_barrier();
-}
-
-int sys_test_remutex(void) {
-  return test_remutex();
+  return 0;
 }

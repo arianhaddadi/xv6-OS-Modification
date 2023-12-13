@@ -76,7 +76,7 @@ AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
-CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer
+CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -O2 -Wall -MD -ggdb -m32 -fno-omit-frame-pointer
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
@@ -174,14 +174,6 @@ UPROGS=\
 	_kill\
 	_ln\
 	_ls\
-	_cpt\
-	_foo\
-	_test_remutex\
-	_barrier\
-	_getpids\
-	_set\
-	_cntdig\
-	_stslp\
 	_mkdir\
 	_rm\
 	_sh\
@@ -189,10 +181,10 @@ UPROGS=\
 	_usertests\
 	_wc\
 	_zombie\
-	_chpri\
-	_chque\
-	_setticket\
-	_lipr\
+	_mpp\
+	_mdr\
+	_longrun\
+	_test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -261,8 +253,8 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 
 EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
-	ln.c ls.c cpt.c foo.c getpids.c test_remutex.c barrier.c set.c cntdig.c stslp.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
-	printf.c umalloc.c\
+	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c zombie.c\
+	printf.c umalloc.c mpp.c mdr.c longrun.c test.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 

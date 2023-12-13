@@ -19,6 +19,14 @@ struct pipe {
   int writeopen;  // write fd is still open
 };
 
+
+/*
+ * My Understanding: This function receives two file double pointers, then allocates a file 
+ * for each of those two file pointers and creates a pipe for those two files pointers. 
+ * The pipe will be the pipe between those two files pointers.
+*/ 
+
+
 int
 pipealloc(struct file **f0, struct file **f1)
 {

@@ -6,7 +6,6 @@
 #include "defs.h"
 #include "x86.h"
 #include "elf.h"
-#include "searchingPaths.h"
 
 int
 exec(char *path, char **argv)
@@ -21,54 +20,11 @@ exec(char *path, char **argv)
   struct proc *curproc = myproc();
 
   begin_op();
+
   if((ip = namei(path)) == 0){
-    if (numOfPaths == 0) {
-      end_op();
-      cprintf("exec: fail\n");
-      return -1;
-    }
-    for (int i = 0 ; i < numOfPaths ; i++) {
-
-      char concatSymbol[60];
-      if((paths[i][0]== '/') == (strlen(paths[i]) == 1)) {
-        for(int j = 0; j < 60; j++) {
-          concatSymbol[j] = '\0';
-        }
-        for(int j = 0; j < strlen(paths[i]); j++){
-          concatSymbol[j] = paths[i][j];
-        }
-        int index = strlen(concatSymbol);
-        for(int j = index; j < index + strlen(path); j ++) {
-          concatSymbol[j] = path[j-index];
-        }
-      }
-      else {
-        for(int j = 0; j < 60; j++) {
-          concatSymbol[j] = '\0';
-        }
-        for(int j = 0; j < strlen(paths[i]); j++){
-          concatSymbol[j] = paths[i][j];
-        }
-        int index = strlen(concatSymbol);
-        concatSymbol[index] = '/';
-        index++;
-        for(int j = index; j < index + strlen(path); j ++) {
-          concatSymbol[j] = path[j-index];
-        }
-      }
-
-      cprintf(concatSymbol);
-      cprintf("\n");
-      if (((ip = namei(concatSymbol)) == 0) && (i == (numOfPaths-1))) {
-        end_op();
-        cprintf("exec: fail\n");
-        return -1;
-      }
-      else if ((ip = namei(concatSymbol)) == 0) {
-        continue;
-      }
-      break;
-    }
+    end_op();
+    cprintf("exec: fail\n");
+    return -1;
   }
   ilock(ip);
   pgdir = 0;

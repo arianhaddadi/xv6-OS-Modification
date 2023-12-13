@@ -1,2 +1,2 @@
 # xv6 Operating System
-This Project is a modification to [xv6 Operating System](https://github.com/mit-pdos/xv6-public) with features like new keyboard shortcuts for console, new system calls, CPU scheduling, and synchronization using barriers and reentrant mutex locks. 
+This Project is a modification to [xv6 Operating System](https://github.com/mit-pdos/xv6-public) with new features like new keyboard shortcuts for console, new system calls, CPU scheduling, synchronization using barriers and reentrant mutex locks, and a new IPC mechanism similar to [Spring OS](https://en.wikipedia.org/wiki/Spring_(operating_system)) doors IPC mechanism.

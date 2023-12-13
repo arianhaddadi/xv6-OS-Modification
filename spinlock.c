@@ -1,4 +1,5 @@
 // Mutual exclusion spin locks.
+
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -41,64 +42,11 @@ acquire(struct spinlock *lk)
   getcallerpcs(&lk, lk->pcs);
 }
 
-void
-acquire_reentrant(struct reentrant_spinlock *lk)
-{
-  pushcli(); // disable interrupts to avoid deadlock.
-  if(holding_reentrant(lk)) {
-    if(lk->pid == myproc()->pid) {
-      popcli();
-      return;
-    }
-    else {
-      panic("acquire");
-    }
-  }
-
-  // The xchg is atomic.
-  while(xchg(&lk->locked, 1) != 0)
-    ;
-
-  // Tell the C compiler and the processor to not move loads or stores
-  // past this point, to ensure that the critical section's memory
-  // references happen after the lock is acquired.
-  __sync_synchronize();
-
-  // Record info about lock acquisition for debugging.
-  lk->cpu = mycpu();
-  lk->pid = myproc()->pid;
-  getcallerpcs(&lk, lk->pcs);
-}
-
 // Release the lock.
 void
 release(struct spinlock *lk)
 {
   if(!holding(lk))
-    panic("release");
-
-  lk->pcs[0] = 0;
-  lk->cpu = 0;
-
-  // Tell the C compiler and the processor to not move loads or stores
-  // past this point, to ensure that all the stores in the critical
-  // section are visible to other cores before the lock is released.
-  // Both the C compiler and the hardware may re-order loads and
-  // stores; __sync_synchronize() tells them both not to.
-  __sync_synchronize();
-
-  // Release the lock, equivalent to lk->locked = 0.
-  // This code can't use a C assignment, since it might
-  // not be atomic. A real OS would use C atomics here.
-  asm volatile("movl $0, %0" : "+m" (lk->locked) : );
-
-  popcli();
-}
-
-void
-release_reentrant(struct reentrant_spinlock *lk)
-{
-  if(!holding_reentrant(lk))
     panic("release");
 
   lk->pcs[0] = 0;
@@ -140,16 +88,6 @@ getcallerpcs(void *v, uint pcs[])
 // Check whether this cpu is holding the lock.
 int
 holding(struct spinlock *lock)
-{
-  int r;
-  pushcli();
-  r = lock->locked && lock->cpu == mycpu();
-  popcli();
-  return r;
-}
-
-int
-holding_reentrant(struct reentrant_spinlock *lock)
 {
   int r;
   pushcli();

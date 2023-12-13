@@ -14,12 +14,10 @@
 #include "mmu.h"
 #include "proc.h"
 #include "x86.h"
-// #include "user.h"
 
 static void consputc(int);
 
-static int panicked = 0, end = -1;
-uint editI = 0;
+static int panicked = 0;
 
 static struct {
   struct spinlock lock;
@@ -128,7 +126,6 @@ panic(char *s)
 //PAGEBREAK: 50
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
-#define INPUT_BUF 128
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
 static void
@@ -142,22 +139,6 @@ cgaputc(int c)
   outb(CRTPORT, 15);
   pos |= inb(CRTPORT+1);
 
-  if (pos < end && c != BACKSPACE) {
-    for (int i = end ; i >= pos ; i--) {
-      crt[i+1] = crt[i];
-    } 
-    end += 1;
-    editI += 1;
-  }
-  if (c == BACKSPACE && pos < end) {
-    for (int i = pos ; i < end ; i++) {
-      crt[i-1] = crt[i];
-    }
-    end -= 1;
-    editI -= 1;
-    crt[end] = ' ' | 0x0700;
-  }
-  
   if(c == '\n')
     pos += 80 - pos%80;
   else if(c == BACKSPACE){
@@ -173,11 +154,12 @@ cgaputc(int c)
     pos -= 80;
     memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
   }
+
   outb(CRTPORT, 14);
   outb(CRTPORT+1, pos>>8);
   outb(CRTPORT, 15);
   outb(CRTPORT+1, pos);
-  if(pos >= end) crt[pos] = ' ' | 0x0700;
+  crt[pos] = ' ' | 0x0700;
 }
 
 void
@@ -196,7 +178,7 @@ consputc(int c)
   cgaputc(c);
 }
 
-
+#define INPUT_BUF 128
 struct {
   char buf[INPUT_BUF];
   uint r;  // Read index
@@ -204,38 +186,21 @@ struct {
   uint e;  // Edit index
 } input;
 
-#define C(x) ((x)-'@')  // Control-x
-
-
-void goToEnd() {
-  if (end != -1) {
-    if((end/80) >= 24){  // Scroll up.
-      memmove(crt, crt+80, sizeof(crt[0])*23*80);
-      end -= 80;
-      memset(crt+end, 0, sizeof(crt[0])*(24*80 - end));
-    }
-    input.e = editI;
-    outb(CRTPORT, 14);
-    outb(CRTPORT+1, end>>8);
-    outb(CRTPORT, 15);
-    outb(CRTPORT+1, end);
-    end = -1;
-  }
-}
+#define C(x)  ((x)-'@')  // Control-x
 
 void
 consoleintr(int (*getc)(void))
 {
-  int c, doprocdump = 0, pos, signedEditI, signedInputE;
+  int c, doprocdump = 0;
 
   acquire(&cons.lock);
   while((c = getc()) >= 0){
     switch(c){
     case C('P'):  // Process listing.
+      // procdump() locks cons.lock indirectly; invoke later
       doprocdump = 1;
       break;
-    case C('C'): case C('U'): // Kill line.
-      goToEnd();
+    case C('U'):  // Kill line.
       while(input.e != input.w &&
             input.buf[(input.e-1) % INPUT_BUF] != '\n'){
         input.e--;
@@ -244,50 +209,13 @@ consoleintr(int (*getc)(void))
       break;
     case C('H'): case '\x7f':  // Backspace
       if(input.e != input.w){
-        for (int i = input.e ; i < editI ; i++) {
-          input.buf[(i - 1) % INPUT_BUF] = input.buf[i % INPUT_BUF];
-        }
         input.e--;
         consputc(BACKSPACE);
       }
       break;
-
-    case '{':
-      outb(CRTPORT, 14);
-      pos = inb(CRTPORT+1) << 8;
-      outb(CRTPORT, 15);
-      pos |= inb(CRTPORT+1); 
-
-      if (pos > end) {
-        end = pos;
-        editI = input.e;
-      }
-      while(input.e != input.w 
-            && input.buf[(input.e-1) % INPUT_BUF] != '\n'
-            ){
-        input.e--;
-        pos--;
-      }
-      outb(CRTPORT, 14);
-      outb(CRTPORT+1, pos>>8);
-      outb(CRTPORT, 15);
-      outb(CRTPORT+1, pos);
-      break;
-    case '}':
-      goToEnd();
-      break;
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
-        if (c == '\n' && end != -1) goToEnd();
-        if (end != -1) {
-          signedInputE = (int)input.e;
-          signedEditI = (int)editI;
-          for (int i = signedEditI - 1 ; i >= signedInputE ; i--) {
-           input.buf[(i+1) % INPUT_BUF] = input.buf[i % INPUT_BUF];
-          }
-        }
-        
         input.buf[input.e++ % INPUT_BUF] = c;
         consputc(c);
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){

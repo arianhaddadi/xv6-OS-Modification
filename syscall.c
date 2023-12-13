@@ -60,6 +60,7 @@ argptr(int n, char **pp, int size)
 {
   int i;
   struct proc *curproc = myproc();
+ 
   if(argint(n, &i) < 0)
     return -1;
   if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
@@ -102,20 +103,9 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
-extern int sys_count_num_of_digits(void);
-extern int sys_get_time(void);
-extern int sys_set_sleep(void);
-extern int sys_set_path(void);
-extern int sys_get_parent_id(void);
-extern int sys_get_children(void);
-extern int sys_change_process_queue(void);
-extern int sys_set_lottery_ticket(void);
-extern int sys_set_srpf_priority(void);
-extern int sys_print_processes_info(void);
-extern int sys_make_barrier(void);
-extern int sys_check_barrier(void);
-extern int sys_test_remutex(void);
-
+extern int sys_door_call(void);
+extern int sys_door_wait(void);
+extern int sys_door_respond(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -139,19 +129,9 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_count_num_of_digits] sys_count_num_of_digits,
-[SYS_set_sleep] sys_set_sleep,
-[SYS_get_time] sys_get_time,
-[SYS_set_path] sys_set_path,
-[SYS_get_parent_id] sys_get_parent_id,
-[SYS_get_children] sys_get_children,
-[SYS_change_process_queue] sys_change_process_queue,
-[SYS_set_lottery_ticket] sys_set_lottery_ticket,
-[SYS_set_srpf_priority] sys_set_srpf_priority,
-[SYS_print_processes_info] sys_print_processes_info,
-[SYS_make_barrier] sys_make_barrier,
-[SYS_check_barrier] sys_check_barrier,
-[SYS_test_remutex] sys_test_remutex
+[SYS_door_call] sys_door_call,
+[SYS_door_wait] sys_door_wait,
+[SYS_door_respond] sys_door_respond
 };
 
 void
